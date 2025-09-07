@@ -21,7 +21,7 @@ public class Exercise {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plan_id", nullable = false)
-    private TrainingPlan trainingPlan; // renamed from 'plan'
+    private TrainingPlan trainingPlan;
 
     @Column(name = "name", nullable = false)
     private String name;

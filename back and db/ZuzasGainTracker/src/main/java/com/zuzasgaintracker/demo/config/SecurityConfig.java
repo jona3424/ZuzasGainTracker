@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
-        return cfg.getAuthenticationManager(); // built from your UserDetailsService + PasswordEncoder beans
+        return cfg.getAuthenticationManager();
     }
 
     @Bean
