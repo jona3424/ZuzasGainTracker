@@ -1,22 +1,27 @@
 package com.zuzasgaintracker.demo.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-@Getter
-@Setter
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Entity
 @Table(name = "exercises")
 public class Exercise {
+
     @Id
-    @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
+    private java.util.UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plan_id", nullable = false)
-    private TrainingPlan plan;
+    private TrainingPlan trainingPlan; // renamed from 'plan'
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -24,8 +29,7 @@ public class Exercise {
     @Column(name = "muscle_group", length = 100)
     private String muscleGroup;
 
-    @Lob
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
     @Column(name = "target_sets", nullable = false)
@@ -52,7 +56,10 @@ public class Exercise {
     @Column(name = "recommended_weight_start")
     private Double recommendedWeightStart;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false, length = 10)
-    private String unit;
+    private Unit unit = Unit.KG;
 
+    @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExerciseLog> exerciseLogs = new ArrayList<>();
 }

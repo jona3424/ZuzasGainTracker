@@ -1,19 +1,26 @@
 package com.zuzasgaintracker.demo.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.persistence.*;
-import java.time.Instant;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Entity
 @Table(name = "training_plans")
 public class TrainingPlan {
+
     @Id
-    @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
+    private java.util.UUID id;
+
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -22,17 +29,32 @@ public class TrainingPlan {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Lob
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "trainingPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Exercise> exercises = new ArrayList<>();
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkoutSession> workoutSessions = new ArrayList<>();
+
+    public void addExercise(Exercise e) {
+        exercises.add(e);
+        e.setTrainingPlan(this);
+    }
+    public void removeExercise(Exercise e) {
+        exercises.remove(e);
+        e.setTrainingPlan(null);
+    }
 }

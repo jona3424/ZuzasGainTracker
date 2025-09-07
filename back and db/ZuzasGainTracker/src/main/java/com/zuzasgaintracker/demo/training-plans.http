@@ -1,0 +1,136 @@
+@base = http://localhost:8080
+@token = current login token here
+
+### 1) CREATE plan A
+POST {{base}}/api/plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Push Day A",
+  "description": "Chest/Shoulders focus. Tempo 3-1-1.",
+  "exercises": [
+    {
+      "name": "Barbell Bench Press",
+      "muscleGroup": "Chest",
+      "notes": "Warm up 2x, working sets @ RPE 8",
+      "targetSets": 4,
+      "targetRepsMin": 6,
+      "targetRepsMax": 8,
+      "recommendedRestSeconds": 150,
+      "sequenceOrder": 1,
+      "dayOfWeek": "MONDAY",
+      "workoutDaySequence": 1,
+      "recommendedWeightStart": 60.0,
+      "unit": "KG"
+    },
+    {
+      "name": "Incline Dumbbell Press",
+      "muscleGroup": "Chest",
+      "notes": "Neutral grip",
+      "targetSets": 3,
+      "targetRepsMin": 8,
+      "targetRepsMax": 12,
+      "recommendedRestSeconds": 120,
+      "sequenceOrder": 2,
+      "dayOfWeek": "MONDAY",
+      "workoutDaySequence": 1,
+      "recommendedWeightStart": 22.5,
+      "unit": "KG"
+    }
+  ]
+}
+
+### Save ids from the previous response in client variables (IntelliJ REST supports this)
+> {% client.global.set("planAId", response.body.id); %}
+> {% client.global.set("exA1Id", response.body.exercises[0].id); %}
+> {% client.global.set("exA2Id", response.body.exercises[1].id); %}
+
+### 2) GET all plans
+GET {{base}}/api/plans
+Authorization: Bearer {{token}}
+
+### 3) GET plan A by ID
+GET {{base}}/api/plans/{{planAId}}
+Authorization: Bearer {{token}}
+
+### 4) UPDATE plan A (modify A1, remove A2, add Cable Flyes)
+PUT {{base}}/api/plans/{{planAId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Push Day A v2",
+  "description": "Tweaked rep ranges; added cable flyes.",
+  "exercises": [
+    {
+      "id": "{{exA1Id}}",
+      "name": "Barbell Bench Press",
+      "muscleGroup": "Chest",
+      "notes": "Top set + backoffs",
+      "targetSets": 4,
+      "targetRepsMin": 5,
+      "targetRepsMax": 7,
+      "recommendedRestSeconds": 150,
+      "sequenceOrder": 2,
+      "dayOfWeek": "MONDAY",
+      "workoutDaySequence": 1,
+      "recommendedWeightStart": 62.5,
+      "unit": "KG"
+    },
+    {
+      "name": "Cable Flyes",
+      "muscleGroup": "Chest",
+      "notes": "Squeeze at peak",
+      "targetSets": 3,
+      "targetRepsMin": 12,
+      "targetRepsMax": 15,
+      "recommendedRestSeconds": 75,
+      "sequenceOrder": 3,
+      "dayOfWeek": "MONDAY",
+      "workoutDaySequence": 1,
+      "recommendedWeightStart": 15.0,
+      "unit": "KG"
+    }
+  ]
+}
+
+### 5) CREATE plan B
+POST {{base}}/api/plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Pull Day B",
+  "description": "Back/Biceps focus",
+  "exercises": [
+    {
+      "name": "Weighted Pull-ups",
+      "muscleGroup": "Back",
+      "notes": "Full ROM",
+      "targetSets": 4,
+      "targetRepsMin": 5,
+      "targetRepsMax": 8,
+      "recommendedRestSeconds": 150,
+      "sequenceOrder": 1,
+      "dayOfWeek": "WEDNESDAY",
+      "workoutDaySequence": 1,
+      "recommendedWeightStart": 10.0,
+      "unit": "KG"
+    }
+  ]
+}
+
+> {% client.global.set("planBId", response.body.id); %}
+
+### 6) SET ACTIVE plan B
+PUT {{base}}/api/plans/{{planBId}}/set-active
+Authorization: Bearer {{token}}
+
+### 7) DELETE plan A
+DELETE {{base}}/api/plans/{{planAId}}
+Authorization: Bearer {{token}}
+
+### 8) GET all plans (verify)
+GET {{base}}/api/plans
+Authorization: Bearer {{token}}
