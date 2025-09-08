@@ -1,39 +1,40 @@
 package com.zuzasgaintracker.demo.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@Entity
-@Table(name = "training_plans")
+@Entity @Table(name = "training_plans")
 public class TrainingPlan {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue @UuidGenerator
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
-    private java.util.UUID id;
-
+    @Column(name = "id", columnDefinition = "VARCHAR(36)", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TINYTEXT")
     private String description;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = false;
+    private boolean active = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -43,18 +44,17 @@ public class TrainingPlan {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "trainingPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Exercise> exercises = new ArrayList<>();
-
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WorkoutSession> workoutSessions = new ArrayList<>();
+    @OrderBy("sequenceOrder ASC")
+    @Fetch(FetchMode.SUBSELECT)
+    private List<PlanDay> days = new ArrayList<>();
 
-    public void addExercise(Exercise e) {
-        exercises.add(e);
-        e.setTrainingPlan(this);
+    public void addDay(PlanDay d) {
+        days.add(d);
+        d.setPlan(this);
     }
-    public void removeExercise(Exercise e) {
-        exercises.remove(e);
-        e.setTrainingPlan(null);
+    public void removeDay(PlanDay d) {
+        days.remove(d);
+        d.setPlan(null);
     }
 }

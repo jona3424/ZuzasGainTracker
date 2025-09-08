@@ -1,9 +1,14 @@
 package com.zuzasgaintracker.demo.entity;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.Instant;
 
 @Getter
@@ -19,9 +24,6 @@ public class ExerciseLog {
     @JoinColumn(name = "session_id", nullable = false)
     private WorkoutSession session;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "exercise_id", nullable = false)
-    private Exercise exercise;
 
     @Column(name = "exercise_name", nullable = false)
     private String exerciseName;
@@ -47,5 +49,23 @@ public class ExerciseLog {
 
     @Column(name = "logged_at", nullable = false)
     private Instant loggedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "plan_exercise_id")
+    private PlanExercise planExercise;
+
+    @NotNull
+    @Column(name = "weight_kg", nullable = false)
+    private Double weightKg;
+
+    @NotNull
+    @ColumnDefault("'KG'")
+    @Lob
+    @Column(name = "unit_entered", nullable = false)
+    private String unitEntered;
+
+    @Column(name = "weight_entered")
+    private Double weightEntered;
 
 }

@@ -2,38 +2,33 @@ package com.zuzasgaintracker.demo.mapper;
 
 import com.zuzasgaintracker.demo.dto.TrainingPlanRequest;
 import com.zuzasgaintracker.demo.dto.TrainingPlanResponse;
-import com.zuzasgaintracker.demo.entity.Exercise;
 import com.zuzasgaintracker.demo.entity.TrainingPlan;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = { ExerciseMapper.class })
-public abstract class TrainingPlanMapper {
+@Mapper(componentModel = "spring", uses = {PlanDayMapper.class})
+public interface TrainingPlanMapper {
 
-    public abstract TrainingPlanResponse toResponse(TrainingPlan entity);
 
-    @Mapping(target = "id", ignore = true)
+    TrainingPlanResponse toResponse(TrainingPlan plan);
+
+    @InheritInverseConfiguration(name = "toResponse")
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "workoutSessions", ignore = true)
-    public abstract TrainingPlan fromRequest(TrainingPlanRequest req);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "workoutSessions", ignore = true)
-    @Mapping(target = "exercises", ignore = true)
-    public abstract void updateEntityFromRequest(TrainingPlanRequest req, @MappingTarget TrainingPlan entity);
+    @Mapping(target = "days", ignore = true)
+    @Mapping(target = "active", source = "active", defaultValue = "false")
+    TrainingPlan toEntity(TrainingPlanRequest request);
 
     @AfterMapping
-    protected void linkChildren(@MappingTarget TrainingPlan plan) {
-        if (plan.getExercises() != null) {
-            for (Exercise e : plan.getExercises()) {
-                e.setTrainingPlan(plan);
-            }
+    default void linkDays(@MappingTarget TrainingPlan plan,
+                          TrainingPlanRequest req,
+                          @Context PlanDayMapper dayMapper,
+                          @Context ExerciseCatalogResolver resolver) {
+        plan.getDays().clear();
+        if (req.getDays() != null) {
+            req.getDays().forEach(d -> {
+                var day = dayMapper.toEntity(d);
+                dayMapper.linkChildren(day, d, plan, resolver, null);
+                plan.getDays().add(day);
+            });
         }
     }
 }

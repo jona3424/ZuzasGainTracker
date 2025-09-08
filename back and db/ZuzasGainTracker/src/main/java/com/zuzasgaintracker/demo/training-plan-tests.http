@@ -1,0 +1,361 @@
+### ENV VARS
+@base = http://localhost:8080
+@email = petricn671@gmail.com
+@password = jonagod
+@token =eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI0ZDJjODQzYi0wOTNiLTQ0MjEtOTNlYS1hMzRjMWE0YWZmOWMiLCJlbWFpbCI6InBldHJpY242NzFAZ21haWwuY29tIiwic3ViIjoicGV0cmljbjY3MUBnbWFpbC5jb20iLCJ0eXAiOiJhY2Nlc3MiLCJpYXQiOjE3NTczNDA5NjEsImV4cCI6MTc1NzM0MTg2MX0.ELhzk8XZe-yAaK5L_vVzysVxTQGTFcC3iDcAET95F90
+
+
+
+###
+# @name login
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+
+### ───────────────
+### EXERCISE CATALOG: CREATE baseline entries
+### We’ll create several master exercises and capture their IDs.
+### ───────────────
+# @name ec_bench_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Barbell Bench Press",
+  "muscleGroup": "Chest",
+  "equipment": "Barbell",
+  "pattern": "Horizontal Press",
+  "isUnilateral": false,
+  "notes": "Classic compound push."
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_bench_id", j.id); %}
+
+###
+# @name ec_row_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Barbell Row",
+  "muscleGroup": "Back",
+  "equipment": "Barbell",
+  "pattern": "Horizontal Pull",
+  "isUnilateral": false,
+  "notes": "Pendlay or standard."
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_row_id", j.id); %}
+
+###
+# @name ec_squat_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Back Squat",
+  "muscleGroup": "Legs",
+  "equipment": "Barbell",
+  "pattern": "Squat",
+  "isUnilateral": false
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_squat_id", j.id); %}
+
+###
+# @name ec_ohp_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Overhead Press",
+  "muscleGroup": "Shoulders",
+  "equipment": "Barbell",
+  "pattern": "Vertical Press",
+  "isUnilateral": false
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_ohp_id", j.id); %}
+
+###
+# @name ec_rdl_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Romanian Deadlift",
+  "muscleGroup": "Hamstrings",
+  "equipment": "Barbell",
+  "pattern": "Hinge",
+  "isUnilateral": false
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_rdl_id", j.id); %}
+
+###
+# @name ec_frontsq_create
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Front Squat",
+  "muscleGroup": "Legs",
+  "equipment": "Barbell",
+  "pattern": "Squat",
+  "isUnilateral": false
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_frontsq_id", j.id); %}
+
+###
+# @name ec_temp_create_for_delete
+POST {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Temp ISO Hold",
+  "muscleGroup": "Arms",
+  "equipment": "Dumbbell",
+  "pattern": "Isometric",
+  "isUnilateral": true
+}
+
+> {% const j = JSON.parse(response.body); client.global.set("ec_temp_id", j.id); %}
+
+### ───────────────
+### EXERCISE CATALOG: LIST / GET / UPDATE / DELETE
+### ───────────────
+# @name ec_list
+GET {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
+
+###
+# @name ec_get_one
+GET {{base}}/api/exercise-catalog/86165858-a250-4fb6-971e-e1e3fb1ac6cb
+Authorization: Bearer {{token}}
+
+###
+# @name ec_update
+PUT {{base}}/api/exercise-catalog/269cfca7-9d6c-48c3-8b32-63e75a6bffbc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": "269cfca7-9d6c-48c3-8b32-63e75a6bffbc",
+  "name": "Barbell Row (Updated)",
+  "muscleGroup": "Back",
+  "equipment": "Barbell",
+  "pattern": "Horizontal Pull",
+  "isUnilateral": false,
+  "notes": "Updated note."
+}
+
+###
+# @name ec_delete_temp
+DELETE {{base}}/api/exercise-catalog/546fd151-e61d-414a-bafc-9732de86898f
+Authorization: Bearer {{token}}
+
+### ───────────────
+### TRAINING PLAN: CREATE (PPL v1)
+### Includes 3 days and multiple exercises. Captures plan/day/exercise IDs from response.
+### ───────────────
+# @name plan_create
+POST {{base}}/api/plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Push/Pull/Legs v1",
+  "description": "6-week base block",
+  "active": false,
+  "days": [
+    {
+      "label": "Push A",
+      "dayOfWeek": 1,
+      "sequenceOrder": 1,
+      "exercises": [
+        {
+          "exerciseCatalogId": "86165858-a250-4fb6-971e-e1e3fb1ac6cb",
+          "sequenceOrder": 1,
+          "targetSets": 4,
+          "targetRepsMin": 6,
+          "targetRepsMax": 8,
+          "recommendedRestSeconds": 180,
+          "recommendedWeightStartKg": 60.0,
+          "rpeTarget": 7,
+          "tempo": "2-0-1",
+          "notes": "Pause 1s on chest"
+        },
+        {
+          "exerciseCatalogId": "5b4b43ee-5f32-4074-ae39-1e9c6678c787",
+          "sequenceOrder": 2,
+          "targetSets": 3,
+          "targetRepsMin": 6,
+          "targetRepsMax": 8,
+          "recommendedRestSeconds": 150
+        }
+      ]
+    },
+    {
+      "label": "Pull A",
+      "dayOfWeek": 3,
+      "sequenceOrder": 2,
+      "exercises": [
+        {
+          "exerciseCatalogId": "269cfca7-9d6c-48c3-8b32-63e75a6bffbc",
+          "sequenceOrder": 1,
+          "targetSets": 4,
+          "targetRepsMin": 6,
+          "targetRepsMax": 10,
+          "recommendedRestSeconds": 150
+        }
+      ]
+    },
+    {
+      "label": "Legs A",
+      "dayOfWeek": 5,
+      "sequenceOrder": 3,
+      "exercises": [
+        {
+          "exerciseCatalogId": "839097fb-f1ac-4b5e-86b9-3248c0445e5d",
+          "sequenceOrder": 1,
+          "targetSets": 5,
+          "targetRepsMin": 3,
+          "targetRepsMax": 5,
+          "recommendedRestSeconds": 240
+        },
+        {
+          "exerciseCatalogId": "f5459d04-dcd4-47b5-9da9-69e6ac9ab51e",
+          "sequenceOrder": 2,
+          "targetSets": 3,
+          "targetRepsMin": 6,
+          "targetRepsMax": 8,
+          "recommendedRestSeconds": 180
+        }
+      ]
+    }
+  ]
+}
+
+
+### ───────────────
+### TRAINING PLAN: LIST MINE
+### ───────────────
+# @name plan_list
+GET {{base}}/api/plans
+Authorization: Bearer {{token}}
+
+### ───────────────
+### TRAINING PLAN: GET ONE
+### ───────────────
+# @name plan_get
+GET {{base}}/api/plans/7d658381-efad-4474-ad15-206a2aa0db46
+Authorization: Bearer {{token}}
+
+### ───────────────
+### TRAINING PLAN: UPDATE (PPL v2)
+### Tests deep merge:
+### - rename plan
+### - keep Push A (update Bench), REMOVE OHP by omission
+### - REMOVE entire Pull A day by omission
+### - keep Legs A, UPDATE Squat, ADD Front Squat
+### ───────────────
+# @name plan_update_merge
+PUT {{base}}/api/plans/7d658381-efad-4474-ad15-206a2aa0db46
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Push/Pull/Legs v2",
+  "description": "8-week progression block",
+  "days": [
+    {
+      "id": "7c4f855c-2dbf-4df8-98de-196a60f0ddab",
+      "label": "Push A",
+      "dayOfWeek": 1,
+      "sequenceOrder": 1,
+      "exercises": [
+        {
+          "id": "4be197f5-4016-4d93-b7b9-033d032c853b",
+          "exerciseCatalogId": "86165858-a250-4fb6-971e-e1e3fb1ac6cb",
+          "sequenceOrder": 1,
+          "targetSets": 5,
+          "targetRepsMin": 5,
+          "targetRepsMax": 6,
+          "recommendedRestSeconds": 180,
+          "rpeTarget": 8,
+          "tempo": "2-1-1",
+          "notes": "Slight pause; tighter form"
+        }
+      ]
+    },
+    {
+      "id": "626c17b2-a694-4396-81a5-6d5ef3232fe0",
+      "label": "Legs A",
+      "dayOfWeek": 5,
+      "sequenceOrder": 2,
+      "exercises": [
+        {
+          "id": "dafe7f65-02e8-43f0-8543-c82561929171",
+          "exerciseCatalogId": "839097fb-f1ac-4b5e-86b9-3248c0445e5d",
+          "sequenceOrder": 1,
+          "targetSets": 5,
+          "targetRepsMin": 4,
+          "targetRepsMax": 6,
+          "recommendedRestSeconds": 240
+        },
+        {
+          "id": "b1703f3f-5b31-4e88-8331-0f288b1da56d",
+          "exerciseCatalogId": "f5459d04-dcd4-47b5-9da9-69e6ac9ab51e",
+          "sequenceOrder": 2,
+          "targetSets": 3,
+          "targetRepsMin": 6,
+          "targetRepsMax": 8,
+          "recommendedRestSeconds": 180
+        },
+        {
+          "exerciseCatalogId": "839097fb-f1ac-4b5e-86b9-3248c0445e5d",
+          "sequenceOrder": 3,
+          "targetSets": 3,
+          "targetRepsMin": 3,
+          "targetRepsMax": 5,
+          "recommendedRestSeconds": 210,
+          "notes": "New accessory added"
+        }
+      ]
+    }
+  ]
+}
+
+### ───────────────
+### TRAINING PLAN: SET ACTIVE
+### ───────────────
+# @name plan_set_active
+PUT {{base}}/api/plans/7d658381-efad-4474-ad15-206a2aa0db46/set-active
+Authorization: Bearer {{token}}
+
+### ───────────────
+### TRAINING PLAN: DELETE (cleanup)
+### ───────────────
+# @name plan_delete
+DELETE {{base}}/api/plans/7d658381-efad-4474-ad15-206a2aa0db46
+Authorization: Bearer {{token}}
+
+### ───────────────
+### EXERCISE CATALOG: FINAL LIST (post-cleanup)
+### ───────────────
+# @name ec_list_final
+GET {{base}}/api/exercise-catalog
+Authorization: Bearer {{token}}
